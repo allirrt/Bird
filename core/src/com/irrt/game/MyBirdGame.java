@@ -19,8 +19,12 @@ public class MyBirdGame extends ApplicationAdapter {
     Texture topTube;
     Texture bottomTube;
     int spaceBetweenTube = 500; //величина пространчтва между трубами
-    float tubeShift; //сдвиг труб
     Random random;
+    int tubeSpeed = 5;
+    int tubeNumbers = 5;
+    float tubeX[] = new float[tubeNumbers];
+    float tubeShift[] = new float[tubeNumbers];//сдвиг труб
+    float distanceBetweenTubes;
 
 	@Override
 	public void create () {
@@ -33,7 +37,16 @@ public class MyBirdGame extends ApplicationAdapter {
         bottomTube = new Texture("bottom_tube.png");
         random = new Random();
 
-        flyHeight =  Gdx.graphics.getHeight()/2 - bird[0].getHeight()/2;//высота полета
+        distanceBetweenTubes = Gdx.graphics.getWidth();
+        for (int i = 0; i < tubeNumbers; i++){
+            tubeX[i] = Gdx.graphics.getWidth()/2 - topTube.getWidth()/2 + i * distanceBetweenTubes;
+       tubeShift[i] =  (random.nextFloat() - 0.5f) *
+               (Gdx.graphics.getHeight() - spaceBetweenTube - 200);//двигаем трубы вверх и вниз рандомно
+
+
+        }
+
+        flyHeight =  Gdx.graphics.getHeight()/2;//высота полета
 	}
 
 	@Override
@@ -47,9 +60,7 @@ public class MyBirdGame extends ApplicationAdapter {
 
             if (Gdx.input.justTouched()){ //когда произошло прикосновение
                 fallingSpeed = -30;
-               tubeShift = (random.nextFloat() - 0.5f) *
-                       (Gdx.graphics.getHeight() - spaceBetweenTube - 200);//двигаем трубы вверх и вниз рандомно
-            }
+                }
             if (flyHeight > 0 || fallingSpeed < 0){//чтобы птичка не улетала выше горизонта
                 fallingSpeed++;
                 flyHeight -= fallingSpeed;
@@ -59,15 +70,23 @@ public class MyBirdGame extends ApplicationAdapter {
                 gameStateFlag = 1;
             }
         }
-        //рисуем трубы
-        batch.draw(topTube,Gdx.graphics.getWidth()/2 - topTube.getWidth()/2, Gdx.graphics.getHeight() / 2 +
-                spaceBetweenTube / 2 + tubeShift);//рисуем верхнюю трубу(координаты)
-        batch.draw(bottomTube,Gdx.graphics.getWidth()/2 - bottomTube.getWidth()/2, Gdx.graphics.getHeight() / 2 -
-                spaceBetweenTube / 2 - bottomTube.getHeight() + tubeShift);//рисуем нижнюю трубу(координаты)
-
+        for (int i = 0; i < tubeNumbers; i++) {
+            if (tubeX[i] < - topTube.getWidth()){
+                tubeX[i] = tubeNumbers * distanceBetweenTubes;
+            } else {
+                tubeX[i] -= tubeSpeed;
+            }
+            //рисуем трубы
+            batch.draw(topTube, tubeX[i], Gdx.graphics.getHeight() / 2 +
+                    spaceBetweenTube / 2 + tubeShift[i]);//рисуем верхнюю трубу(координаты)
+            batch.draw(bottomTube, tubeX[i], Gdx.graphics.getHeight() / 2 -
+                    spaceBetweenTube / 2 - bottomTube.getHeight() + tubeShift[i]);//рисуем нижнюю трубу(координаты)
+        }
       if (birdStateFlag == 0){
           birdStateFlag = 1;
-      }else {birdStateFlag= 0;}
+      }else {
+          birdStateFlag= 0;
+      }
 
 
 
