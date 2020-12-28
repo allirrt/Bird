@@ -1,5 +1,4 @@
 package com.irrt.game;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -14,43 +13,55 @@ import com.badlogic.gdx.math.Rectangle;
 
 import java.util.Random;
 
-public class MyBirdGame extends ApplicationAdapter {
-	SpriteBatch batch;
-	Texture background;
-	Texture[] bird;
-	int birdStateFlag = 0;
-	float flyHeight;
-	float fallingSpeed = 0;//скорость падения
+
+class MyBirdGame extends ApplicationAdapter {
+    SpriteBatch batch;
+
+    Texture background;
+
+    Texture[] bird;
+    int birdStateFlag = 0;
+    float flyHeight;
+    float fallingSpeed = 0;
     int gameStateFlag = 0;
+
     Texture topTube;
     Texture bottomTube;
-    int spaceBetweenTube = 500; //величина пространчтва между трубами
+    int spaceBetweenTubes = 500;
     Random random;
     int tubeSpeed = 5;
-    int tubeNumbers = 5;
-    float tubeX[] = new float[tubeNumbers];
-    float tubeShift[] = new float[tubeNumbers];//сдвиг труб
+    int tubesNumber = 5;
+    float tubeX[] = new float[tubesNumber];
+    float tubeShift[] = new float[tubesNumber];
     float distanceBetweenTubes;
-    Circle birdCircle; //создаем круг
-   Rectangle[] topTubeRectangle;
-   Rectangle[] bottomTubeRectangle;
-  //  ShapeRenderer shapeRenderer; отображение прямоугольникоп
-   int gameScore = 0;//счет игры
-   int passedTubeIndex = 0;//индекс удачных проходов между труб
-    BitmapFont scoreFont;//счет на экран
+
+    Circle birdCircle;
+    Rectangle[] topTubeRectangles;
+    Rectangle[] bottomTubeRectangles;
+//	ShapeRenderer shapeRenderer;
+
+    int gameScore = 0;
+    int passedTubeIndex = 0;
+    BitmapFont scoreFont;
+
     Texture gameOver;
 
-	@Override
-	public void create () {
-		batch = new SpriteBatch();
-		background = new Texture("background.png");
-        topTubeRectangle = new Rectangle[tubeNumbers];
-        bottomTubeRectangle = new Rectangle[tubeNumbers];
-   //     shapeRenderer = new ShapeRenderer();
+
+    @Override
+    public void create () {
+        batch = new SpriteBatch();
+        background = new Texture("background.png");
+//		shapeRenderer = new ShapeRenderer();
+
         birdCircle = new Circle();
-		bird = new Texture[2];
+        topTubeRectangles = new Rectangle[tubesNumber];
+        bottomTubeRectangles = new Rectangle[tubesNumber];
+
+        bird = new Texture[2];
         bird[0] = new Texture("bird_wings_up.png");
         bird[1] = new Texture("bird_wings_down.png");
+
+
         topTube = new Texture("top_tube.png");
         bottomTube = new Texture("bottom_tube.png");
         random = new Random();
@@ -58,119 +69,152 @@ public class MyBirdGame extends ApplicationAdapter {
         scoreFont.setColor(Color.CYAN);
         scoreFont.getData().setScale(10);
 
-        gameOver =new Texture("game_over.png");
+        gameOver = new Texture("game_over.png");
 
-        distanceBetweenTubes = Gdx.graphics.getWidth();
-        for (int i = 0; i < tubeNumbers; i++){
-            tubeX[i] = Gdx.graphics.getWidth()/2
-                    - topTube.getWidth()/2 + Gdx.graphics.getWidth() + i * distanceBetweenTubes;
-       tubeShift[i] =  (random.nextFloat() - 0.5f) *
-               (Gdx.graphics.getHeight() - spaceBetweenTube - 200);//двигаем трубы вверх и вниз рандомно
-        topTubeRectangle[i] = new Rectangle();
-        bottomTubeRectangle[i] = new Rectangle();
+        distanceBetweenTubes = Gdx.graphics.getWidth() / 2;
+
+        initGame();
 
 
+    }
+
+    public void initGame() {
+        flyHeight = Gdx.graphics.getHeight() / 2
+                - bird[0].getHeight() / 2;
+
+        for (int i = 0; i < tubesNumber; i++) {
+            tubeX[i] = Gdx.graphics.getWidth() / 2
+                    - topTube.getWidth() / 2 + Gdx.graphics.getWidth() +
+                    i * distanceBetweenTubes * 1.5f;
+            tubeShift[i] = (random.nextFloat() - 0.5f) *
+                    (Gdx.graphics.getHeight() - spaceBetweenTubes - 200);
+            topTubeRectangles[i] = new Rectangle();
+            bottomTubeRectangles[i] = new Rectangle();
         }
+    }
 
+    @Override
+    public void render () {
 
-	}
+        batch.begin();
+        batch.draw(background, 0, 0, Gdx.graphics.getWidth(),
+                Gdx.graphics.getHeight());
 
-	@Override
-	public void render () {
-        batch.begin();//запускаем игру
-        batch.draw(background,0,0,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());//рисуем background
-	    if (Gdx.input.justTouched()){ //когда произошло прикосновение
-        gameStateFlag = 1;
-        }
-	    if (gameStateFlag == 1){//игра запустится ести пользователь прикоснулся к экрану
+        if (gameStateFlag == 1) {
 
-	        if (tubeX[passedTubeIndex] < Gdx.graphics.getWidth() /2){
-	            gameScore++;
-	            if (passedTubeIndex < tubeNumbers - 1){
-	                passedTubeIndex++;
-                }else {
-	                passedTubeIndex = 0;
+            Gdx.app.log("Game score", String.valueOf(gameScore));
+
+            if (tubeX[passedTubeIndex] < Gdx.graphics.getWidth() / 2) {
+                gameScore++;
+
+                if (passedTubeIndex < tubesNumber - 1) {
+                    passedTubeIndex++;
+                } else {
+                    passedTubeIndex = 0;
                 }
             }
 
-            if (Gdx.input.justTouched()){ //когда произошло прикосновение
-                fallingSpeed = -30;
+            if (Gdx.input.justTouched()) {
+                fallingSpeed = -25;
+            }
+
+            for (int i = 0; i < tubesNumber; i++) {
+
+                if (tubeX[i] < -topTube.getWidth()) {
+                    tubeX[i] = tubesNumber * distanceBetweenTubes;
+                } else {
+                    tubeX[i] -= tubeSpeed;
                 }
-            if (flyHeight > 0){//чтобы птичка не улетала выше горизонта
+
+                batch.draw(topTube, tubeX[i], Gdx.graphics.getHeight() / 2 +
+                        spaceBetweenTubes / 2 + tubeShift[i]);
+                batch.draw(bottomTube, tubeX[i], Gdx.graphics.getHeight() / 2 -
+                        spaceBetweenTubes / 2 - bottomTube.getHeight() + tubeShift[i]);
+
+                topTubeRectangles[i] =
+                        new Rectangle(tubeX[i], Gdx.graphics.getHeight() / 2 +
+                                spaceBetweenTubes / 2 + tubeShift[i],
+                                topTube.getWidth(), topTube.getHeight());
+
+                bottomTubeRectangles[i] =
+                        new Rectangle(tubeX[i], Gdx.graphics.getHeight() / 2 -
+                                spaceBetweenTubes / 2 - bottomTube.getHeight() +
+                                tubeShift[i],
+                                bottomTube.getWidth(), bottomTube.getHeight());
+
+            }
+
+            if (flyHeight > 0) {
                 fallingSpeed++;
                 flyHeight -= fallingSpeed;
             } else {
                 gameStateFlag = 2;
             }
-           }else if(gameStateFlag == 0){
-            if (Gdx.input.justTouched()) { //когда произошло прикосновение
+
+        } else if (gameStateFlag == 0){
+            if (Gdx.input.justTouched()) {
+                Gdx.app.log("Tap", "Oops!");
                 gameStateFlag = 1;
             }
-        } else if (gameStateFlag == 2){
-	        batch.draw(gameOver, Gdx.graphics.getWidth() / 2,
-                    gameOver.getWidth() / 2,
-                    Gdx.graphics.getHeight() / 2,
-                    gameOver.getHeight() / 2);
-        }
-        for (int i = 0; i < tubeNumbers; i++) {
-            if (tubeX[i] < - topTube.getWidth()){
-                tubeX[i] = tubeNumbers * distanceBetweenTubes;
-            } else {
-                tubeX[i] -= tubeSpeed;
+        } else if (gameStateFlag == 2) {
+            batch.draw(gameOver,
+                    Gdx.graphics.getWidth() / 2 - gameOver.getWidth() / 2,
+                    Gdx.graphics.getHeight() / 2 - gameOver.getHeight() / 2);
+
+            if (Gdx.input.justTouched()) {
+                Gdx.app.log("Tap", "Oops!");
+                gameStateFlag = 1;
+                initGame();
+                gameScore = 0;
+                passedTubeIndex = 0;
+                fallingSpeed = 0;
             }
-            //рисуем трубы
-            batch.draw(topTube, tubeX[i], Gdx.graphics.getHeight() / 2 +
-                    spaceBetweenTube / 2 + tubeShift[i]);//рисуем верхнюю трубу(координаты)
-            batch.draw(bottomTube, tubeX[i], Gdx.graphics.getHeight() / 2 -
-                    spaceBetweenTube / 2 - bottomTube.getHeight() + tubeShift[i]);//рисуем нижнюю трубу(координаты)
-
-        topTubeRectangle[i] = new Rectangle(tubeX[i], Gdx.graphics.getHeight() / 2 +
-                spaceBetweenTube / 2 + tubeShift[i], topTube.getWidth(), topTube.getHeight());
-
-        bottomTubeRectangle[i] = new Rectangle(tubeX[i], Gdx.graphics.getHeight() / 2 -
-                spaceBetweenTube / 2 - bottomTube.getHeight() + tubeShift[i], bottomTube.getWidth(), bottomTube.getHeight());
         }
-      if (birdStateFlag == 0){
-          birdStateFlag = 1;
-      }else {
-          birdStateFlag= 0;
-      }
 
 
 
-   batch.draw(bird[birdStateFlag], Gdx.graphics.getWidth()/2 - bird[birdStateFlag].getWidth()/2,
-           flyHeight);//рисуем птичку
+        if (birdStateFlag == 0) {
+            birdStateFlag = 1;
+        } else {
+            birdStateFlag = 0;
+        }
 
-        scoreFont.draw(batch, String.valueOf(gameScore), 100, 200);//показания счетчика
 
+        batch.draw(bird[birdStateFlag], Gdx.graphics.getWidth() / 2
+                        - bird[birdStateFlag].getWidth() / 2,
+                flyHeight);
 
-
+        scoreFont.draw(batch, String.valueOf(gameScore), 100, 200);
 
         batch.end();
 
-   birdCircle.set(Gdx.graphics.getWidth()/2, flyHeight + bird[birdStateFlag].getWidth() /2,
-           bird[birdStateFlag].getWidth() / 2);
-  // shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-//   shapeRenderer.setColor(Color.CYAN);
-//   shapeRenderer.circle(birdCircle.x, birdCircle.y, birdCircle.radius);
+        birdCircle.set(Gdx.graphics.getWidth() / 2, flyHeight +
+                        bird[birdStateFlag].getHeight() / 2,
+                bird[birdStateFlag].getWidth() / 2);
 
-        for (int i = 0; i < tubeNumbers; i++) {
- //   shapeRenderer.rect(tubeX[i], Gdx.graphics.getHeight() / 2 +
- //           spaceBetweenTube / 2 + tubeShift[i], topTube.getWidth(), topTube.getHeight());
-//    shapeRenderer.rect(tubeX[i], Gdx.graphics.getHeight() / 2 -
- //           spaceBetweenTube / 2 - bottomTube.getHeight() + tubeShift[i], bottomTube.getWidth(), bottomTube.getHeight());
+//		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+//		shapeRenderer.setColor(Color.CYAN);
+//		shapeRenderer.circle(birdCircle.x, birdCircle.y, birdCircle.radius);
 
-     //пересечение птички с трубой
-       if (Intersector.overlaps(birdCircle, topTubeRectangle[i]) ||
-               Intersector.overlaps(birdCircle, bottomTubeRectangle[i])){
-        birdStateFlag = 2;
-       }
+        for (int i = 0; i < tubesNumber; i++) {
+
+//			shapeRenderer.rect(tubeX[i], Gdx.graphics.getHeight() / 2 +
+//							spaceBetweenTubes / 2 + tubeShift[i],
+//					topTube.getWidth(), topTube.getHeight());
+//			shapeRenderer.rect(tubeX[i], Gdx.graphics.getHeight() / 2 -
+//							spaceBetweenTubes / 2 - bottomTube.getHeight() +
+//							tubeShift[i],
+//					bottomTube.getWidth(), bottomTube.getHeight());
+
+            if (Intersector.overlaps(birdCircle, topTubeRectangles[i]) ||
+                    Intersector.overlaps(birdCircle, bottomTubeRectangles[i])) {
+                Gdx.app.log("Intersected", "Bump!");
+                gameStateFlag = 2;
+            }
 
         }
 
- //  shapeRenderer.end();
-
-	}
-	
+//		shapeRenderer.end();
+    }
 
 }
